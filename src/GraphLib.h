@@ -33,13 +33,14 @@ class IPDrawer
 public:
   Display *display;
   Window window;
-  GC gc;
+  GC context;
+  XEvent event;
 
   IPDrawer() { }
 
   IPEXITSTATUS initDisplay(int XRES, int YRES)
   {
-    display = XOpenDisplay( NULL );
+    display = XOpenDisplay(NULL);
     if (! display)
       return IPERROR;
 
@@ -47,21 +48,32 @@ public:
     unsigned int white = WhitePixel(display, screen);
     unsigned int black = BlackPixel(display, screen);
 
-    window = XCreateSimpleWindow(display, DefaultRootWindow(display), 0, 0, XRES, YRES, 0, black, white);
+    window = XCreateSimpleWindow(display, DefaultRootWindow(display), 0, 0, XRES, YRES, 0, black, black);
+    XSelectInput(display, window, StructureNotifyMask);
+    XMapWindow(display, window);
 
     Atom wmDelete=XInternAtom(display, "WM_DELETE_WINDOW", True);
     XSetWMProtocols(display, window, &wmDelete, 1);
 
-    gc = XCreateGC(display, window, 0, NULL);
+    context = XCreateGC(display, window, 0, NULL);
 
-    XSetForeground(display, gc, black);
-    XMapWindow(display, window);
+    XSetForeground(display, context, white);
+
+    while (true)
+    {
+      XNextEvent(display, &event);
+      if (event.type == MapNotify)
+         break;
+    }
+    XClearWindow(display, window);
     XFlush(display);
     return IPOK;
   }
 
-  int finishDisplay()
+  IPEXITSTATUS finishDisplay()
   {
+    XFreeGC(display, context);
+    XUnmapWindow(display,window);
     XDestroyWindow(display, window);
     XCloseDisplay(display);
     return IPOK;
@@ -166,13 +178,15 @@ public:
 
   void draw(const IPDrawer& drawer) const override
   {
-    XPoint points[vertexCount];
+    XPoint points[vertexCount + 1];
     for (uint32_t i = 0; i < vertexCount; ++i)
     {
       points[i].x = vertices[i].X;
       points[i].y = vertices[i].Y;
     }
-    XDrawLines(drawer.display, drawer.window, drawer.gc, points, vertexCount, CoordModeOrigin);
+    points[vertexCount].x = vertices[0].X;
+    points[vertexCount].y = vertices[0].Y;
+    XDrawLines(drawer.display, drawer.window, drawer.context, points, vertexCount + 1, CoordModeOrigin);
     XFlush(drawer.display);
   }
 
@@ -217,7 +231,7 @@ public:
 
   void draw(const IPDrawer& drawer) const override
   {
-    XDrawArc(drawer.display, drawer.window, drawer.gc, center.X - radius, center.Y - radius, radius * 2, radius * 2, 0, 360 * 64);
+    XDrawArc(drawer.display, drawer.window, drawer.context, center.X - radius, center.Y - radius, radius * 2, radius * 2, 0, 360 * 64);
     XFlush(drawer.display);
   }
 
