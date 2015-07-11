@@ -1,5 +1,11 @@
 #include <vector>
 #include <stdio.h>
+#include <stdlib.h>
+#include <X11/Xlib.h>
+#include <X11/Xutil.h>
+#include <X11/Xos.h>
+#include <X11/Xatom.h>
+#include <X11/keysym.h>
 
 #include "GraphLib.h"
 
@@ -35,8 +41,7 @@ EXIT_STATUS initDisplay(int XRES, int YRES)
 
   XSetForeground(display, gc, black);
   XMapWindow(display, window);
-  XClearWindow(display, window);
-  sleep(5);
+  XFlush(display);
   return OK;
 }
 
@@ -69,9 +74,9 @@ int main()
 
   if (initDisplay(500, 500) != OK)
     return 1;
-  sleep(5);
   for (auto element: shapeVector)
     element->draw();
+  sleep(5);
   finishDisplay();
 
   return 0;
