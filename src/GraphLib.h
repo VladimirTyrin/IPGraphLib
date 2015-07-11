@@ -226,7 +226,7 @@ public:
 
   ~IPCircle() { }
 
-  IPCircle& operator=(const IPCircle rhs)
+  IPCircle& operator=(const IPCircle& rhs)
   {
     if (this == &rhs)
       return *this;
