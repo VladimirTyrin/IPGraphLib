@@ -9,28 +9,28 @@
 using std::vector;
 using std::invalid_argument;
 
-typedef double glNumber;
+typedef double ipNumber;
 
 /////////////////////////////////////////////
 
 /* Not an actual shape, used for vertices */
-class GLPoint
+class IPPoint
 {
 public:
-  glNumber X;
-  glNumber Y;
+  ipNumber X;
+  ipNumber Y;
 
-  GLPoint():
+  IPPoint():
     X(0), Y(0)
   { }
-  GLPoint(glNumber x, glNumber y) :
+  IPPoint(ipNumber x, ipNumber y) :
     X(x), Y(y)
   { }
-  GLPoint(const GLPoint& rhs) :
+  IPPoint(const IPPoint& rhs) :
     X(rhs.X), Y(rhs.Y)
   { }
 
-  GLPoint& operator=(const GLPoint& rhs)
+  IPPoint& operator=(const IPPoint& rhs)
   {
     X = rhs.X;
     Y = rhs.Y;
@@ -40,21 +40,21 @@ public:
 
 /////////////////////////////////////////////
 
-class GLShape
+class IPShape
 {
 public:
-  explicit GLShape() { }
+  explicit IPShape() { }
 
   /* We want to have copy constructor, but cannot have unused parameters */
-  GLShape(const GLShape& rhs)
+  IPShape(const IPShape& rhs)
   {
     (void) rhs;   
   }
 
-  virtual ~GLShape() { }
+  virtual ~IPShape() { }
 
   /* We want to have assignment operator, but cannot have unused parameters */
-  GLShape& operator=(const GLShape& rhs)
+  IPShape& operator=(const IPShape& rhs)
   {
     (void) rhs;
     return *this;
@@ -62,37 +62,37 @@ public:
 
   virtual void draw() const
   {
-
+    /* Do nothing */
   }
 
   virtual void printInfo() const
   {
-    printf("GLShape\n");
+    printf("IPShape\n");
   }
 };
 
 /////////////////////////////////////////////
 
 template <uint32_t vertexCount>
-class GLPolygon : public GLShape
+class IPPolygon : public IPShape
 {
 private:
-  GLPoint vertices[vertexCount];
+  IPPoint vertices[vertexCount];
 
 public:
-  explicit GLPolygon() :
-    GLShape()
+  explicit IPPolygon() :
+    IPShape()
   { }
 
-  GLPolygon(const GLPolygon<vertexCount>& rhs) :
-    GLShape()
+  IPPolygon(const IPPolygon<vertexCount>& rhs) :
+    IPShape()
   {
     for (uint32_t i = 0; i < vertexCount; ++i)
       vertices[i] = rhs.vertices[i];
   }
 
-  GLPolygon(vector<GLPoint> verticesArg) :
-    GLShape()
+  IPPolygon(vector<IPPoint> verticesArg) :
+    IPShape()
   {
     if (verticesArg.size() != vertexCount)
       throw invalid_argument("Bad vertex number!");
@@ -100,9 +100,9 @@ public:
       vertices[i] = verticesArg[i];
   }
 
-  ~GLPolygon() { }
+  ~IPPolygon() { }
 
-  GLPolygon<vertexCount>& operator=(const GLPolygon<vertexCount>& rhs)
+  IPPolygon<vertexCount>& operator=(const IPPolygon<vertexCount>& rhs)
   {
     for (uint32_t i = 0; i < vertexCount; ++i)
       vertices[i] = rhs.vertices[i];
@@ -111,42 +111,41 @@ public:
 
   void draw() const override
   {
-
   }
 
   void printInfo() const override
   {
-    printf("GLPolygon with %d vertices:\n", vertexCount);
+    printf("IPPolygon with %d vertices:\n", vertexCount);
     for (auto vertex: vertices)
-      printf("\tGLPoint(%.3lf, %.3lf)\n", vertex.X, vertex.Y);
+      printf("\tIPPoint(%.3lf, %.3lf)\n", vertex.X, vertex.Y);
   }
 };
 
 /////////////////////////////////////////////
 
-class GLCircle : public GLShape
+class IPCircle : public IPShape
 {
 private:
-  GLPoint center;
-  glNumber radius;
+  IPPoint center;
+  ipNumber radius;
 public:
-  explicit GLCircle():
-    GLShape(), radius(0)
+  explicit IPCircle():
+    IPShape(), radius(0)
   { }
 
-  GLCircle(const GLCircle& rhs) :
-    GLShape(), center(rhs.center)
+  IPCircle(const IPCircle& rhs) :
+    IPShape(), center(rhs.center)
   {
     radius = rhs.radius;
   }
 
-  GLCircle(GLPoint centerArg, glNumber radiusArg):
-    GLShape(), center(centerArg), radius(radiusArg)
+  IPCircle(IPPoint centerArg, ipNumber radiusArg):
+    IPShape(), center(centerArg), radius(radiusArg)
   { }
 
-  ~GLCircle() { }
+  ~IPCircle() { }
 
-  GLCircle& operator=(const GLCircle rhs)
+  IPCircle& operator=(const IPCircle rhs)
   {
     radius = rhs.radius;
     center = rhs.center;
@@ -160,14 +159,14 @@ public:
 
   void printInfo() const override
   {
-    printf("GLCircle with radius = %.3lf and center in:\n", radius);
-    printf("\tGLPoint(%.3lf, %.3lf)\n", center.X, center.Y);
+    printf("IPCircle with radius = %.3lf and center in:\n", radius);
+    printf("\tIPPoint(%.3lf, %.3lf)\n", center.X, center.Y);
   }
 };
 
 /////////////////////////////////////////////
 
-typedef GLPolygon<3> GLTriangle;
-typedef GLPolygon<4> GLQuadrangle;
+typedef IPPolygon<3> IPTriangle;
+typedef IPPolygon<4> IPQuadrangle;
 
 #endif
