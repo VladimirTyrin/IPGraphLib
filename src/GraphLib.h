@@ -99,6 +99,8 @@ public:
 
   IPPoint& operator=(const IPPoint& rhs)
   {
+    if (this == &rhs)
+      return *this;
     X = rhs.X;
     Y = rhs.Y;
     return *this;
@@ -171,6 +173,8 @@ public:
 
   IPPolygon<vertexCount>& operator=(const IPPolygon<vertexCount>& rhs)
   {
+    if (this == &rhs)
+      return *this;
     for (uint32_t i = 0; i < vertexCount; ++i)
       vertices[i] = rhs.vertices[i];
     return *this;
@@ -224,6 +228,8 @@ public:
 
   IPCircle& operator=(const IPCircle rhs)
   {
+    if (this == &rhs)
+      return *this;
     radius = rhs.radius;
     center = rhs.center;
     return *this;
