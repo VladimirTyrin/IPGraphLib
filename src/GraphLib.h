@@ -5,13 +5,68 @@
 #include <cstdio>
 #include <vector>
 #include <stdexcept>
+#include <cstdlib>
+
+#include <X11/Xlib.h>
+#include <X11/Xutil.h>
+#include <X11/Xos.h>
+#include <X11/Xatom.h>
+#include <X11/keysym.h>
 
 using std::vector;
 using std::invalid_argument;
 
+/* IP stands for 'interview problem' */
+
 typedef double ipNumber;
 
+enum IPEXITSTATUS : int
+{
+  IPOK = 0,
+  IPERROR = 1
+};
+
 /////////////////////////////////////////////
+
+class IPDrawer
+{
+public:
+  Display *display;
+  Window window;
+  GC gc;
+
+  IPDrawer() { }
+
+  IPEXITSTATUS initDisplay(int XRES, int YRES)
+  {
+    display = XOpenDisplay( NULL );
+    if (! display)
+      return IPERROR;
+
+    int screen = DefaultScreen(display);
+    unsigned int white = WhitePixel(display, screen);
+    unsigned int black = BlackPixel(display, screen);
+
+    window = XCreateSimpleWindow(display, DefaultRootWindow(display), 0, 0, XRES, YRES, 0, black, white);
+
+    Atom wmDelete=XInternAtom(display, "WM_DELETE_WINDOW", True);
+    XSetWMProtocols(display, window, &wmDelete, 1);
+
+    gc = XCreateGC(display, window, 0, NULL);
+
+    XSetForeground(display, gc, black);
+    XMapWindow(display, window);
+    XFlush(display);
+    return IPOK;
+  }
+
+  int finishDisplay()
+  {
+    XDestroyWindow(display, window);
+    XCloseDisplay(display);
+    return IPOK;
+  }
+};
 
 /* Not an actual shape, used for vertices */
 class IPPoint
@@ -60,9 +115,9 @@ public:
     return *this;
   }
 
-  virtual void draw() const
+  virtual void draw(const IPDrawer& drawer) const
   {
-    /* Do nothing */
+    XFlush(drawer.display);
   }
 
   virtual void printInfo() const
@@ -109,8 +164,16 @@ public:
     return *this;
   }
 
-  void draw() const override
+  void draw(const IPDrawer& drawer) const override
   {
+    XPoint points[vertexCount];
+    for (uint32_t i = 0; i < vertexCount; ++i)
+    {
+      points[i].x = vertices[i].X;
+      points[i].y = vertices[i].Y;
+    }
+    XDrawLines(drawer.display, drawer.window, drawer.gc, points, vertexCount, CoordModeOrigin);
+    XFlush(drawer.display);
   }
 
   void printInfo() const override
@@ -152,9 +215,10 @@ public:
     return *this;
   }
 
-  void draw() const override
+  void draw(const IPDrawer& drawer) const override
   {
-
+    XDrawArc(drawer.display, drawer.window, drawer.gc, center.X - radius, center.Y - radius, radius * 2, radius * 2, 0, 360 * 64);
+    XFlush(drawer.display);
   }
 
   void printInfo() const override
